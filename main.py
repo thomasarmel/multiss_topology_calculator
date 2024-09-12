@@ -32,7 +32,7 @@ def generate_multiss_topology(t_networks: int, t_nodes: int, t_fail: int, nodes_
     num_polynomial_R = 1
     for daughter_network in range(1, len(nodes_count_in_daughter_network) + 1):
         for num_polynomial_Q in range(1, num_polynomial_Q + 1):
-            print("Generate polynomial R" + str(num_polynomial_R), "of degree", threshold_R - 1, "such that R" + str(num_polynomial_R) + "(0) = Q" + str(num_polynomial_Q)
+            print("Generate polynomial R" + str(num_polynomial_R), "of degree", threshold_R - 1, "such that R" + str(num_polynomial_R) + "(0) = Q'" + str(num_polynomial_Q)
                   + "(" + str(daughter_network) + ") and distribute it over daughter network", daughter_network)
             num_polynomial_R += 1
 
