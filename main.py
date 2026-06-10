@@ -1,7 +1,7 @@
 import itertools
 
 
-def generate_multiss_topology(t_networks: int, t_nodes: int, t_fail: int, nodes_count_in_mother_network: int, nodes_count_in_daughter_network: list[int]):
+def generate_multiss_topology_standard(t_networks: int, t_nodes: int, t_fail: int, nodes_count_in_mother_network: int, nodes_count_in_daughter_network: list[int]):
     l = len(nodes_count_in_daughter_network) + 1
     n_0 = nodes_count_in_mother_network
     n_daughters = nodes_count_in_daughter_network
@@ -68,17 +68,87 @@ def generate_multiss_topology(t_networks: int, t_nodes: int, t_fail: int, nodes_
         print(f" - Distribution: Evaluations Q_{i}(1) to Q_{i}({n_i}) are stored in nodes 1 to {n_i}.")
 
 
+def generate_multiss_topology_local(t_networks: int, t_nodes: int, t_fail: int, nodes_count_in_mother_network: int, nodes_count_in_daughter_network: list[int]):
+    assert len(nodes_count_in_daughter_network) == nodes_count_in_mother_network, "Error: Local mode requires the number of daughter subnets to strictly equal the number of nodes in the mother subnet."
+
+    l = len(nodes_count_in_daughter_network) + 1
+    n_0 = nodes_count_in_mother_network
+    n_daughters = nodes_count_in_daughter_network
+
+    T_P = t_networks - 1
+
+    print(f"Target:")
+    print(f" - t_networks: {t_networks}")
+    print(f" - t_nodes: {t_nodes}")
+    print(f" - t_fail: {t_fail}")
+    print("--------------------------------------")
+
+    if T_P <= 0 or T_P >= l:
+        print("Error: Invalid t_networks for the current topology.")
+        return
+
+    expected_t_fail = n_0 - T_P + 1
+    if t_fail != expected_t_fail:
+        print(f"Error: Constraints mismatch. For local mode, t_fail is fixed to n_0 - T(P) + 1 = {expected_t_fail}.")
+        return
+
+    ranges = [range(1, n + 1) for n in n_daughters]
+
+    valid_config = None
+
+    for combo in itertools.product(*ranges):
+        T_R_daughters = combo
+
+        sorted_T_R = sorted(T_R_daughters)
+        calculated_t_nodes = T_P + sum(sorted_T_R[:T_P])
+
+        if calculated_t_nodes == t_nodes:
+            valid_config = combo
+            break
+
+    if not valid_config:
+        print("Error: No valid polynomial degrees found for the given thresholds.")
+        return
+
+    T_R_daughters = valid_config
+
+    print(f" - Polynomial P threshold: {T_P}")
+    print("--------------------------------------")
+
+    print("Mother Network N_0:")
+    print(f" - Nodes count: {n_0}")
+    print(f" - Distribution: For each node i in 1 to {n_0}:")
+    print(f"     Node i stores Q_i(1)")
+    print(f"     Where Q_i is degree 1, and Q_i(0) = P(i)")
+    print("--------------------------------------")
+
+    for i, (n_i, T_Ri) in enumerate(zip(n_daughters, T_R_daughters), start=1):
+        print(f"Daughter Network N_{i}:")
+        print(f" - Nodes count: {n_i}")
+        print(f" - Polynomial R_{i} threshold: {T_Ri}")
+        print(f" - Relation: R_{i}(0) = Q'_{i}(2)")
+        print(f" - Distribution: Evaluations R_{i}(1) to R_{i}({n_i}) are stored in nodes 1 to {n_i}.")
+
+
+print("STANDARD:")
+
 print("TEST 1")
-generate_multiss_topology(3, 6, 2, 3, [3, 3, 3])
+generate_multiss_topology_standard(3, 6, 2, 3, [3, 3, 3])
 
 print("\n\n")
 print("TEST 2")
-generate_multiss_topology(3, 5, 2, 2, [3, 3, 3])
+generate_multiss_topology_standard(3, 5, 2, 2, [3, 3, 3])
 
 print("\n\n")
 print("TEST 3")
-generate_multiss_topology(4, 5, 2, 2, [3, 3, 3])
+generate_multiss_topology_standard(4, 5, 2, 2, [3, 3, 3])
 
 print("\n\n")
 print("TEST 4")
-generate_multiss_topology(3, 6, 2, 3, [3, 3])
+generate_multiss_topology_standard(3, 6, 2, 3, [3, 3])
+
+
+print("LOCAL:")
+
+print("TEST 1")
+generate_multiss_topology_local(3, 6, 2, 3, [3, 3, 3])
